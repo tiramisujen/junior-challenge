@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from app.models.match import Match
+import re
 
 matches_bp = Blueprint('matches', __name__)
 
@@ -28,8 +29,39 @@ matches_bp = Blueprint('matches', __name__)
 
 @matches_bp.route('', methods=['GET'])
 def get_matches():
-    # TODO: Replace with your implementation (YOUR TASK #2)
-    return jsonify([]), 200
+    """
+    GET endpoint to retrieve matches with optional filters.
+    
+    Query Parameters:
+        city_id (optional): Filter matches by city ID
+        date (optional): Filter matches by date in YYYY-MM-DD format
+    
+    Returns:
+        JSON array of match objects ordered by kickoff time
+    """
+    # optional query parameters
+    city = request.args.get('city', type=str)
+    date = request.args.get('date', type=str)
+
+    # base query
+    query = Match.query
+
+    # apply city_id filter if there is one
+    if city is not None:
+        query = query.filter_by(city_id=city)
+    
+    if date is not None:
+        # Validate date format (YYYY-MM-DD)
+        if not re.match(r'^\d{4}-\d{2}-\d{2}$', date):
+            return jsonify({"error": "Invalid date format. Use YYYY-MM-DD"}), 400
+        
+        # Filter for dates that start with the provided date
+        query = query.filter(Match.kickoff.startswith(date))
+    
+    # order by kickoff
+    matches = query.order_by(Match.kickoff).all()
+    # return converted dicts
+    return jsonify([match.to_dict() for match in matches]), 200
 
 
 # ============================================================
