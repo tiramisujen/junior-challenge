@@ -3,7 +3,7 @@ from app.models.match import Match
 from app.models.flight_price import FlightPrice
 from app.strategies.nearest_neighbour_strategy import NearestNeighbourStrategy
 # Tip: You can also import DateOnlyStrategy to compare results
-# from app.strategies.date_only_strategy import DateOnlyStrategy
+from app.strategies.date_only_strategy import DateOnlyStrategy
 
 optimise_bp = Blueprint('optimise', __name__)
 
@@ -38,8 +38,39 @@ optimise_bp = Blueprint('optimise', __name__)
 
 @optimise_bp.route('/optimise', methods=['POST'])
 def optimise():
-    # TODO: Replace with your implementation (YOUR TASK #3)
-    return jsonify({}), 200
+    """
+    POST endpoint to optimise a travel route given a list of matches.
+    
+    Request body:
+        { "matchIds": ["match-1", "match-5", "match-12", ...] }
+    
+    Returns:
+        JSON object with optimised route
+    """
+    # Step 1: Extract matchIds from request JSON
+    data = request.get_json()
+    match_ids = data.get('matchIds', [])
+
+    # Validate that matchIds is provided
+    if not match_ids:
+        return jsonify({"error": "matchIds array is required"}), 400
+
+    # Step 2: Fetch full match data from database
+    matches = []
+    for match_id in match_ids:
+        match = Match.query.get(match_id)
+        if match is None:
+            return jsonify({"error": f"Match with id: '{match_id}' not found"}), 404
+        matches.append(match)
+    
+    # Step 3: Convert matches to dicts
+    match_dicts = [match.to_dict() for match in matches]
+    
+    # Step 4: Create strategy instance and optimise
+    strategy = DateOnlyStrategy()
+    optimised_matches = strategy.optimise(match_dicts)
+    
+    return jsonify(optimised_matches), 200
 
 
 # ============================================================
