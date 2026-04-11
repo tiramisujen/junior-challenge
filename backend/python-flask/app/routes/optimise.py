@@ -67,7 +67,8 @@ def optimise():
     match_dicts = [match.to_dict() for match in matches]
     
     # Step 4: Create strategy instance and optimise
-    strategy = DateOnlyStrategy()
+    #strategy = DateOnlyStrategy()
+    strategy = NearestNeighbourStrategy()
     optimised_matches = strategy.optimise(match_dicts)
     
     return jsonify(optimised_matches), 200
