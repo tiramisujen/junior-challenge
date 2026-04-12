@@ -4,6 +4,7 @@ from app.models.flight_price import FlightPrice
 from app.strategies.nearest_neighbour_strategy import NearestNeighbourStrategy
 # Tip: You can also import DateOnlyStrategy to compare results
 from app.strategies.date_only_strategy import DateOnlyStrategy
+from app.utils.cost_calculator import CostCalculator
 
 optimise_bp = Blueprint('optimise', __name__)
 
@@ -59,13 +60,14 @@ def optimise():
     matches = []
     for match_id in match_ids:
         match = Match.query.get(match_id)
+        
         if match is None:
             return jsonify({"error": f"Match with id: '{match_id}' not found"}), 404
         matches.append(match)
     
     # Step 3: Convert matches to dicts
     match_dicts = [match.to_dict() for match in matches]
-    
+
     # Step 4: Create strategy instance and optimise
     #strategy = DateOnlyStrategy()
     strategy = NearestNeighbourStrategy()
@@ -107,9 +109,67 @@ def optimise():
 # ============================================================
 @optimise_bp.route('/budget', methods=['POST'])
 def budget_optimise():
-    # TODO: Replace with your implementation (YOUR TASK #5)
-    return jsonify({}), 200
+    """
+        POST endpoint to calculate trip costs and check budget.
+        
+        Request body:
+            {
+                "budget": 5000.00,
+                "matchIds": ["match-1", "match-5", "match-12", ...],
+                "originCityId": "city-atlanta"
+            }
+        
+        Returns:
+            JSON object with budget calculation result
+        """
+    
+    # step 1: Extract budget, matchIds and originCityId from the request
+    data = request.get_json()
+    budget = data.get('budget')
+    match_ids = data.get('matchIds', [])
+    origin_city_id = data.get('originCityId')
 
+    # Debug: print what we received
+    print(f"Received budget: {budget}")
+    print(f"Received matchIds: {match_ids}")
+    print(f"Received originCityId: {origin_city_id}")
+    
+    # step 2: Fetch the matches by their id from the db
+    matches = []
+    for match_id in match_ids:
+        match = Match.query.get(match_id)
+        if match is None:
+            return jsonify({
+                "error": f"Match with id '{match_id}' not found"}), 404
+        matches.append(match)
+    
+    print(f"Fetched {len(matches)} matches from database")
+    
+    # step 3: convert the matches to dicts
+    match_dicts = [match.to_dict() for match in matches]
+
+    print(f"Converted matches to dicts: {len(match_dicts)} matches")
+    
+    # step 4: fetch all of the flight prices from the db
+    flight_prices = FlightPrice.query.all()
+    flight_prices_dicts = [fp.to_dict() for fp in flight_prices]
+
+    # DEBUG: Print the structure of a flight price
+    if flight_prices_dicts:
+        print(f"Flight price structure: {flight_prices_dicts[0]}")
+
+    print(f"Fetched {len(flight_prices_dicts)} flight prices from database")
+    
+    # step 5: create an instance of the CostCalculator and call calculate()
+    calculator = CostCalculator()
+    budget_result = calculator.calculate(match_dicts, budget, origin_city_id, flight_prices_dicts)
+
+    print(f"Budget calculation result: {budget_result}")
+    
+    return jsonify({
+        "message": "Step 5 complete - budget calculated",
+        "result": budget_result
+    }), 200
 
 # ============================================================
 #  POST /api/route/best-value — Find best match combination within budget
