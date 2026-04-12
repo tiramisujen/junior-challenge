@@ -52,13 +52,30 @@ class CostCalculator:
         Returns:
             BudgetResult dict containing feasibility, costs, and suggestions
         """
+
+
+
         # TODO: Implement cost calculation (YOUR TASK #5)
         #
         # Pseudocode:
         # 1. Calculate ticket costs:
-        #    - Sum of match['ticketPrice'] for all matches
-        #
+        print(f"\n=== STEP 1: CALCULATE TICKET COSTS ===")
+        ticket_costs = sum(match['ticketPrice'] for match in matches)
+
+        print(f"Ticket costs: ${ticket_costs:.2f}")
+    
         # 2. Calculate flight costs:
+        print(f"=== STEP 2: CALCULATE FLIGHT COSTS ===")
+        flight_costs = 0
+
+        # flight from origin to the first match's city
+        if matches:
+            first_match_city = matches[0]['city']['id']
+            origin_to_first = self.get_flight_price(origin_city_id, first_match_city, flight_prices)
+            flight_costs += origin_to_first
+            print(f"  Origin ({origin_city_id}) → {first_match_city}: ${origin_to_first:.2f}")
+        # flights between consecutive matches
+
         #    - From origin_city_id to first match's city
         #    - Between each consecutive match city (if different)
         #    - Use get_flight_price() helper to look up prices
@@ -82,8 +99,8 @@ class CostCalculator:
         #    - Use generate_suggestions() helper
         #
         # 8. Return BudgetResult with all results
-
-        raise NotImplementedError("Not implemented — this is your task!")
+        print("calculator not implemented yet")
+        #raise NotImplementedError("Not implemented — this is your task!")
 
     # ============================================================
     # HELPER METHODS (Already implemented for you)
@@ -103,12 +120,12 @@ class CostCalculator:
             return 0
 
         for fp in flight_prices:
-            if fp['from_city_id'] == from_city_id and fp['to_city_id'] == to_city_id:
-                return fp['price']
+            if fp['originCityId'] == from_city_id and fp['destinationCityId'] == to_city_id:
+                return fp['priceUsd']
 
         # If no direct flight, estimate based on average
         if flight_prices:
-            avg_price = sum(fp['price'] for fp in flight_prices) / len(flight_prices)
+            avg_price = sum(fp['priceUsd'] for fp in flight_prices) / len(flight_prices)
             return avg_price * 1.2  # 20% markup for indirect routes
         return 300 * 1.2
 
