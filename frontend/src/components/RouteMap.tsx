@@ -149,6 +149,19 @@ function RouteMap({ route, originCity }: RouteMapProps) {
                     - <span className="popup-match-number"> for stop number
                     - <span className="popup-match-date"> for the date
               */}
+                {stops.map((stop) => (
+                <div key={stop.stopNumber} className="popup-match">
+                  <span className="popup-match-number">Stop {stop.stopNumber}</span>
+                  <div style={{ margin: '0.3rem 0' }}>
+                    <strong>{stop.match.homeTeam.name}</strong>
+                    <span> vs </span>
+                    <strong>{stop.match.awayTeam.name}</strong>
+                  </div>
+                  <span className="popup-match-date">
+                    {new Date(stop.match.kickoff).toLocaleDateString()}
+                  </span>
+                </div>
+              ))}
             </Popup>
           </Marker>
         );
