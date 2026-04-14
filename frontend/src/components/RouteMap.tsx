@@ -138,10 +138,11 @@ function RouteMap({ route, originCity }: RouteMapProps) {
             <Popup>
               <strong>{firstStop.city.name}</strong>
               <br />
-              <span style={{ fontSize: '0.85em', color: '#666' }}>{firstStop.city.country}</span>
+              <span style={{ fontSize: '0.85em', color: '#666'
+               }}>{firstStop.city.country}</span>
               <hr style={{ margin: '0.5rem 0', border: 'none', borderTop: '1px solid #ddd' }} />
               {/* ============================================================
-                  TODO: Render match details for each stop (YOUR TASK)
+                  DONE: Render match details for each stop
                   ============================================================
 
                   CSS classes to use:
@@ -149,19 +150,23 @@ function RouteMap({ route, originCity }: RouteMapProps) {
                     - <span className="popup-match-number"> for stop number
                     - <span className="popup-match-date"> for the date
               */}
+                {/* Render match details for each stop in the city popup */}
                 {stops.map((stop) => (
-                <div key={stop.stopNumber} className="popup-match">
-                  <span className="popup-match-number">Stop {stop.stopNumber}</span>
-                  <div style={{ margin: '0.3rem 0' }}>
-                    <strong>{stop.match.homeTeam.name}</strong>
-                    <span> vs </span>
-                    <strong>{stop.match.awayTeam.name}</strong>
+                  <div key={stop.stopNumber} style={{ marginBottom: '0.5rem'}}>
+                    {/* Stop number styled in brand red to stand out */}
+                    <span style={{ fontWeight: 'bold', fontSize: '1.0em', color:"#e94560" }}>Stop {stop.stopNumber}</span>
+                    {/* Team names separated by 'vs' */}
+                    <div style={{ margin: '0.3rem 0' }}>
+                      <strong>{stop.match.homeTeam.name}</strong>
+                      <span> vs </span>
+                      <strong>{stop.match.awayTeam.name}</strong>
+                    </div>
+                    {/* Kickoff date formatted to user's locale e.g. 15/03/2024 */}
+                    <span style={{ fontSize: '0.85em', color: '#666' }}>
+                      {new Date(stop.match.kickoff).toLocaleDateString()}
+                    </span>
                   </div>
-                  <span className="popup-match-date">
-                    {new Date(stop.match.kickoff).toLocaleDateString()}
-                  </span>
-                </div>
-              ))}
+                ))}
             </Popup>
           </Marker>
         );

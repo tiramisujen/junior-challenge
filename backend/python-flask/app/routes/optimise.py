@@ -72,7 +72,11 @@ def optimise():
     #strategy = DateOnlyStrategy()
     strategy = NearestNeighbourStrategy()
     optimised_matches = strategy.optimise(match_dicts)
-    
+
+    countries_visited = CostCalculator().get_countries_visited(match_dicts)
+    missing_countries = CostCalculator().get_missing_countries(countries_visited)
+    optimised_matches['countriesVisited'] = countries_visited
+    optimised_matches['missingCountries'] = missing_countries
     return jsonify(optimised_matches), 200
 
 
