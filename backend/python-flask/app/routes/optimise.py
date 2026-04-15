@@ -58,7 +58,7 @@ def optimise():
         return jsonify({"error": "matchIds array is required"}), 400
 
     # Step 2: Fetch full match data from database
-    matches = _fetch_matches_by_ids(match_ids)
+    matches = fetch_matches_by_ids(match_ids)
     if not matches:
         return jsonify({"error": "No matches found"}), 404
     
@@ -139,7 +139,7 @@ def budget_optimise():
     print(f"Received originCityId: {origin_city_id}")
     
     # step 2: Fetch the matches by their id from the db
-    matches = _fetch_matches_by_ids(match_ids)
+    matches = fetch_matches_by_ids(match_ids)
     if not matches:
         return jsonify({"error": "No matches found"}), 404
     
@@ -151,7 +151,7 @@ def budget_optimise():
     print(f"Converted matches to dicts: {len(match_dicts)} matches")
     
     # step 4: fetch all of the flight prices from the db
-    flight_prices_dicts = _fetch_flight_prices()
+    flight_prices_dicts = fetch_flight_prices()
 
     # DEBUG: Print the structure of a flight price
     if flight_prices_dicts:
@@ -222,7 +222,7 @@ def best_value():
     print(f"Received originCityId: {origin_city_id}")
 
     # step 2: fetch all available matches from the database
-    matches = _fetch_all_matches()
+    matches = fetch_all_matches()
     if not matches:
         return jsonify({"error": "No matches available in database"}), 404
     
@@ -233,7 +233,7 @@ def best_value():
     print(f"Converted matches to dicts: {len(match_dicts)} matches")
     
     # step 4: fetch all flight prices from the database
-    flight_prices_dicts = _fetch_flight_prices()
+    flight_prices_dicts = fetch_flight_prices()
     
     # debug: print the structure of a flight price
     if flight_prices_dicts:
@@ -267,7 +267,7 @@ def _extract_request_data(data, required_fields):
         extracted[field] = value
     return extracted, None, None
 
-def _fetch_matches_by_ids(match_ids):
+def fetch_matches_by_ids(match_ids):
     """helper function to fetch matches by their IDs"""
     matches = []
     for match_id in match_ids:
@@ -277,11 +277,11 @@ def _fetch_matches_by_ids(match_ids):
         matches.append(match)
     return matches
 
-def _fetch_all_matches():
+def fetch_all_matches():
     """helper function to fetch all matches from database"""
     return Match.query.all()
 
-def _fetch_flight_prices():
+def fetch_flight_prices():
     """helper function to fetch all flight prices from database"""
     flight_prices = FlightPrice.query.all()
     return [fp.to_dict() for fp in flight_prices]
