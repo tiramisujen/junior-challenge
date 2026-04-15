@@ -175,22 +175,19 @@ class CostCalculator:
         result = {
             "message": message,
             "feasible": feasible,
-            "breakdown": {
-                "tickets": round(ticket_costs, 2),
-                "flights": round(flight_costs, 2),
-                "accommodations": round(accommodation_costs, 2),
-                "total": round(total_cost, 2)
+            "costBreakdown": {
+                "ticketCost": round(ticket_costs, 2),
+                "flightCost": round(flight_costs, 2),
+                "accommodationCost": round(accommodation_costs, 2),
+                "totalCost": round(total_cost, 2)
             },
             "budget": round(budget, 2),
             "remaining": round(remaining_budget, 2),
             "countriesVisited": countries_visited,
             "missingCountries": missing_countries,
-            "matchCount": len(matches)
+            "matchCount": len(matches),
+            "suggestions": suggestions
         }
-
-        # Only add suggestions if over budget
-        if is_over_budget:
-            result["suggestions"] = suggestions
 
         return result
     

@@ -57,7 +57,7 @@ export async function calculateBudget(
     matchIds,
     originCityId,
   });
-  return data;
+  return data.result;
 }
 
 export async function getBestValue(
