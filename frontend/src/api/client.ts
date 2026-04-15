@@ -68,5 +68,5 @@ export async function getBestValue(
     budget,
     originCityId,
   });
-  return data;
+  return data.result;
 }

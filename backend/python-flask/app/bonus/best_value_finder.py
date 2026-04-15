@@ -158,14 +158,35 @@ class BestValueFinder:
         print(f"step 5 complete - optimised route built")
 
         # step 6: return BestValueResult
-        trip_cost = self.calculate_trip_cost(selected_matches, origin_city_id, flight_prices)
         countries_visited = list(set(m['city']['country'] for m in selected_matches))
-        
+
+        ticket_cost = sum(m['ticketPrice'] for m in selected_matches)
+
+        sorted_matches = sorted(selected_matches, key=lambda m: m['kickoff'])
+        flight_cost = self.get_flight_price(origin_city_id, sorted_matches[0]['city']['id'], flight_prices)
+        for i in range(1, len(sorted_matches)):
+            flight_cost += self.get_flight_price(
+                sorted_matches[i - 1]['city']['id'],
+                sorted_matches[i]['city']['id'],
+                flight_prices
+            )
+
+        accommodation_cost = 0.0
+        for i, match in enumerate(sorted_matches):
+            nights = 1
+            if i < len(sorted_matches) - 1:
+                d1 = datetime.fromisoformat(match['kickoff'].split('T')[0])
+                d2 = datetime.fromisoformat(sorted_matches[i + 1]['kickoff'].split('T')[0])
+                nights = max(1, (d2 - d1).days)
+            accommodation_cost += nights * match['city']['accommodationPerNight']
+
         cost_breakdown = {
-            'ticketCost': sum(m['ticketPrice'] for m in selected_matches),
-            'flightCost': trip_cost - sum(m['ticketPrice'] for m in selected_matches),  # simplified
-            'totalCost': trip_cost
+            'ticketCost': ticket_cost,
+            'flightCost': flight_cost,
+            'accommodationCost': accommodation_cost,
+            'totalCost': ticket_cost + flight_cost + accommodation_cost
         }
+
         return {
                 'withinBudget': True,
                 'matches': selected_matches,
