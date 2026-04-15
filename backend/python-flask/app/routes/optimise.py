@@ -5,6 +5,7 @@ from app.strategies.nearest_neighbour_strategy import NearestNeighbourStrategy
 # Tip: You can also import DateOnlyStrategy to compare results
 from app.strategies.date_only_strategy import DateOnlyStrategy
 from app.utils.cost_calculator import CostCalculator
+from app.bonus.best_value_finder import BestValueFinder
 
 optimise_bp = Blueprint('optimise', __name__)
 
@@ -57,13 +58,11 @@ def optimise():
         return jsonify({"error": "matchIds array is required"}), 400
 
     # Step 2: Fetch full match data from database
-    matches = []
-    for match_id in match_ids:
-        match = Match.query.get(match_id)
-        
-        if match is None:
-            return jsonify({"error": f"Match with id: '{match_id}' not found"}), 404
-        matches.append(match)
+    matches = _fetch_matches_by_ids(match_ids)
+    if not matches:
+        return jsonify({"error": "No matches found"}), 404
+    
+    print(f"Fetched {len(matches)} matches from database")
     
     # Step 3: Convert matches to dicts
     match_dicts = [match.to_dict() for match in matches]
@@ -72,13 +71,14 @@ def optimise():
     #strategy = DateOnlyStrategy()
     strategy = NearestNeighbourStrategy()
     optimised_matches = strategy.optimise(match_dicts)
-
     countries_visited = CostCalculator().get_countries_visited(match_dicts)
     missing_countries = CostCalculator().get_missing_countries(countries_visited)
     optimised_matches['countriesVisited'] = countries_visited
     optimised_matches['missingCountries'] = missing_countries
-    return jsonify(optimised_matches), 200
+    optimised_matches['feasible'] = len(missing_countries) == 0 and len(match_dicts) >= 5
 
+    
+    return jsonify(optimised_matches), 200
 
 # ============================================================
 #  POST /api/route/budget — Calculate trip costs and check budget
@@ -125,7 +125,7 @@ def budget_optimise():
         
         Returns:
             JSON object with budget calculation result
-        """
+    """
     
     # step 1: Extract budget, matchIds and originCityId from the request
     data = request.get_json()
@@ -139,13 +139,9 @@ def budget_optimise():
     print(f"Received originCityId: {origin_city_id}")
     
     # step 2: Fetch the matches by their id from the db
-    matches = []
-    for match_id in match_ids:
-        match = Match.query.get(match_id)
-        if match is None:
-            return jsonify({
-                "error": f"Match with id '{match_id}' not found"}), 404
-        matches.append(match)
+    matches = _fetch_matches_by_ids(match_ids)
+    if not matches:
+        return jsonify({"error": "No matches found"}), 404
     
     print(f"Fetched {len(matches)} matches from database")
     
@@ -155,8 +151,7 @@ def budget_optimise():
     print(f"Converted matches to dicts: {len(match_dicts)} matches")
     
     # step 4: fetch all of the flight prices from the db
-    flight_prices = FlightPrice.query.all()
-    flight_prices_dicts = [fp.to_dict() for fp in flight_prices]
+    flight_prices_dicts = _fetch_flight_prices()
 
     # DEBUG: Print the structure of a flight price
     if flight_prices_dicts:
@@ -205,5 +200,88 @@ def budget_optimise():
 # ============================================================
 @optimise_bp.route('/best-value', methods=['POST'])
 def best_value():
-    # TODO: Replace with your implementation (BONUS CHALLENGE #1)
-    return jsonify({}), 200
+    """
+    POST endpoint to find the best match combination within budget.
+    
+    Request body:
+        {
+            "budget": 5000.00,
+            "originCityId": "city-atlanta"
+        }
+    
+    Returns:
+        JSON object with best value route and cost breakdown
+    """
+    # step 1: Extract budget and originCityId from request JSON
+    data = request.get_json()
+    budget = data.get('budget')
+    origin_city_id = data.get('originCityId')
+
+    # debug: print what we received
+    print(f"Received budget: {budget}")
+    print(f"Received originCityId: {origin_city_id}")
+
+    # step 2: fetch all available matches from the database
+    matches = _fetch_all_matches()
+    if not matches:
+        return jsonify({"error": "No matches available in database"}), 404
+    
+    print(f"Fetched {len(matches)} matches from database")
+    # step 3: convert matches to dicts
+    match_dicts = [match.to_dict() for match in matches]
+    
+    print(f"Converted matches to dicts: {len(match_dicts)} matches")
+    
+    # step 4: fetch all flight prices from the database
+    flight_prices_dicts = _fetch_flight_prices()
+    
+    # debug: print the structure of a flight price
+    if flight_prices_dicts:
+        print(f"Flight price structure: {flight_prices_dicts[0]}")
+    
+    print(f"Fetched {len(flight_prices_dicts)} flight prices from database")
+    
+    # step 5: create a BestValueFinder instance
+    finder = BestValueFinder()
+    
+    print(f"BestValueFinder instance created")
+    
+    # step 6: call finder.find_best_value()
+    best_value_result = finder.find_best_value(match_dicts, budget, origin_city_id, flight_prices_dicts)
+    
+    print(f"Best value calculation result: {best_value_result}")
+    
+    # step 7: return the BestValueResult as JSON
+    return jsonify({
+        "message": "Best value route found",
+        "result": best_value_result
+    }), 200
+
+def _extract_request_data(data, required_fields):
+    """helper function to extract and validate request data"""
+    extracted = {}
+    for field in required_fields:
+        value = data.get(field)
+        if value is None:
+            return None, jsonify({"error": f"Missing required field: {field}"}), 400
+        extracted[field] = value
+    return extracted, None, None
+
+def _fetch_matches_by_ids(match_ids):
+    """helper function to fetch matches by their IDs"""
+    matches = []
+    for match_id in match_ids:
+        match = Match.query.get(match_id)
+        if match is None:
+            return None  # just return None on error
+        matches.append(match)
+    return matches
+
+def _fetch_all_matches():
+    """helper function to fetch all matches from database"""
+    return Match.query.all()
+
+def _fetch_flight_prices():
+    """helper function to fetch all flight prices from database"""
+    flight_prices = FlightPrice.query.all()
+    return [fp.to_dict() for fp in flight_prices]

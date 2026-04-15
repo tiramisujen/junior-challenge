@@ -7,7 +7,7 @@ interface CostBreakdownPanelProps {
 
 function CostBreakdownPanel({ result, budget }: CostBreakdownPanelProps) {
   const { feasible, costBreakdown, missingCountries, minimumBudgetRequired, suggestions } = result;
-  const overBudget = costBreakdown.total > budget;
+  const overBudget = costBreakdown.totalCost > budget;
 
   return (
     <div className="cost-breakdown">
@@ -35,19 +35,19 @@ function CostBreakdownPanel({ result, budget }: CostBreakdownPanelProps) {
         <h4>Cost Breakdown</h4>
         <div className="cost-row">
           <span>Flights</span>
-          <span>${costBreakdown.flights.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <span>${costBreakdown.flightCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
         <div className="cost-row">
           <span>Accommodation</span>
-          <span>${costBreakdown.accommodation.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <span>${costBreakdown.accommodationCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
         <div className="cost-row">
           <span>Match Tickets</span>
-          <span>${costBreakdown.tickets.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <span>${costBreakdown.ticketCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
         <div className={`cost-row cost-total ${overBudget ? 'over-budget' : ''}`}>
           <span>Total</span>
-          <span>${costBreakdown.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <span>${costBreakdown.totalCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
         <div className="cost-row budget-row">
           <span>Your Budget</span>
@@ -56,7 +56,7 @@ function CostBreakdownPanel({ result, budget }: CostBreakdownPanelProps) {
         {overBudget && (
           <div className="cost-row over-amount">
             <span>Over by</span>
-            <span>${(costBreakdown.total - budget).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <span>${(costBreakdown.totalCost - budget).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </div>
         )}
       </div>

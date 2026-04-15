@@ -66,19 +66,19 @@ function BestValueDialog({ result, budget, onClose, onApply }: BestValueDialogPr
               <h4>Cost Breakdown</h4>
               <div className="cost-row">
                 <span>Flights</span>
-                <span>${costBreakdown.flights.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <span>${costBreakdown.flightCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div className="cost-row">
                 <span>Accommodation</span>
-                <span>${costBreakdown.accommodation.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <span>${costBreakdown.accommodationCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div className="cost-row">
                 <span>Match Tickets</span>
-                <span>${costBreakdown.tickets.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <span>${costBreakdown.ticketCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div className={`cost-row cost-total ${!withinBudget ? 'over-budget' : ''}`}>
                 <span>Total</span>
-                <span>${costBreakdown.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <span>${costBreakdown.totalCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div className="cost-row budget-row">
                 <span>Your Budget</span>

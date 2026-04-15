@@ -62,10 +62,10 @@ export interface BudgetRequest {
 }
 
 export interface CostBreakdown {
-  flights: number;
-  accommodation: number;
-  tickets: number;
-  total: number;
+  flightCost: number;
+  accommodationCost: number;
+  ticketCost: number;
+  totalCost: number;
 }
 
 export interface BudgetResult {
