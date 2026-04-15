@@ -75,6 +75,8 @@ def optimise():
     missing_countries = CostCalculator().get_missing_countries(countries_visited)
     optimised_matches['countriesVisited'] = countries_visited
     optimised_matches['missingCountries'] = missing_countries
+    optimised_matches['feasible'] = len(missing_countries) == 0 and len(match_dicts) >= 5
+
     
     return jsonify(optimised_matches), 200
 
